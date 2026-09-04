@@ -14,20 +14,31 @@ export function Qa({ lesson, question }: QaProps) {
 
   async function submit() {
     if (!answer.trim() || busy) return;
+    const text = answer;
     setBusy(true);
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode: "grade", lesson, question, answer }),
+        body: JSON.stringify({ mode: "grade", lesson, question, answer: text }),
       });
       const j: { reply?: string } = await res.json();
-      const text = j.reply ?? "No reply from tutor.";
-      setReply(text);
-      const key = `tbd.results.${lesson}`;
-      const results = JSON.parse(localStorage.getItem(key) ?? "{}") as Record<string, unknown>;
-      results[`qa-${question.slice(0, 24)}`] = { answer, assessment: text };
-      localStorage.setItem(key, JSON.stringify(results));
+      const assessment = j.reply ?? "No reply from tutor.";
+      setReply(assessment);
+      try {
+        await fetch("/api/results", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            lesson,
+            widget: "qa",
+            widgetId: `qa-${question.slice(0, 24)}`,
+            value: { answer: text, assessment },
+          }),
+        });
+      } catch {
+        // Non-critical — grading still shown to the learner.
+      }
     } finally {
       setBusy(false);
     }

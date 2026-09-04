@@ -15,43 +15,44 @@ interface Card {
   back: string;
 }
 
-interface FlashcardsProps {
-  id?: string;
-  cards: Card[];
-}
-
-function recordResult(id: string | undefined, value: unknown) {
-  const lesson = window.location.pathname.split("/").pop() ?? "unknown";
-  const key = `tbd.results.${lesson}`;
-  const results = JSON.parse(localStorage.getItem(key) ?? "{}");
-  results[id ?? "unnamed"] = value;
-  localStorage.setItem(key, JSON.stringify(results));
+async function recordResult(widget: string, id: string | undefined, value: unknown) {
+  const lesson = window.location.pathname.split("/").filter(Boolean).pop() ?? "unknown";
+  try {
+    await fetch("/api/results", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lesson, widget, widgetId: id, value }),
+    });
+  } catch {
+    // Network or server down — keep going; result is non-critical.
+  }
 }
 
 export function Quiz({ id, question, choices, answer, explain }: QuizProps) {
   const [picked, setPicked] = useState<number | null>(null);
-  const show = picked !== null;
   const correct = picked === answer;
+  const show = picked !== null;
 
   return (
     <div className="widget rounded-xl border border-zinc-200 dark:border-zinc-700 p-5 my-6 bg-zinc-50/60 dark:bg-zinc-900/60">
       <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500 mb-2">Quiz</div>
       <p className="font-medium mb-3">{question}</p>
-      <div className="flex flex-col gap-2">
+      <div className="grid gap-2">
         {choices.map((opt, i) => {
-          let cls = "border-zinc-300 dark:border-zinc-600 hover:border-zinc-500 text-left";
-          if (show) {
-            if (i === answer) cls = "border-emerald-500 bg-emerald-500/10 text-left";
-            else if (i === picked) cls = "border-red-500 bg-red-500/10 text-left";
-            else cls = "border-zinc-200 dark:border-zinc-700 opacity-60 text-left";
-          }
+          const cls = !show
+            ? "hover:border-zinc-400 dark:hover:border-zinc-500"
+            : i === answer
+              ? "border-emerald-500 bg-emerald-500/10"
+              : i === picked
+                ? "border-red-400 bg-red-400/10"
+                : "opacity-60";
           return (
             <button
               key={i}
-              disabled={show}
               onClick={() => {
+                if (show) return;
                 setPicked(i);
-                recordResult(id, { choice: i, correct: i === answer });
+                void recordResult("quiz", id, { choice: i, correct: i === answer });
               }}
               className={`rounded-lg border px-4 py-2 transition ${cls}`}
             >
@@ -71,7 +72,7 @@ export function Quiz({ id, question, choices, answer, explain }: QuizProps) {
   );
 }
 
-export function Flashcards({ id, cards }: FlashcardsProps) {
+export function Flashcards({ id, cards }: { id?: string; cards: Card[] }) {
   const [i, setI] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [knew, setKnew] = useState(0);
@@ -80,7 +81,7 @@ export function Flashcards({ id, cards }: FlashcardsProps) {
   const respond = (known: boolean) => {
     if (known) setKnew((k) => k + 1);
     setFlipped(false);
-    if (i + 1 >= cards.length) recordResult(id, { knew: knew + (known ? 1 : 0), total: cards.length });
+    if (i + 1 >= cards.length) void recordResult("flashcards", id, { knew: knew + (known ? 1 : 0), total: cards.length });
     setI(i + 1);
   };
 

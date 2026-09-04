@@ -11,6 +11,12 @@ for f in ChatPane Exercise LessonNav PlaygroundPane SplitPane widgets Qa; do
 done
 cp "$SKILL_DIR/engine/globals.css" "$TARGET/src/app/globals.css"
 
+# results API: add if missing (newer engine)
+if [ ! -f "$TARGET/src/app/api/results/route.ts" ]; then
+  mkdir -p "$TARGET/src/app/api/results"
+  cp "$SKILL_DIR/app-templates/results-route.ts" "$TARGET/src/app/api/results/route.ts"
+fi
+
 # lessons-layout.tsx holds the course name — preserve the existing one unless absent
 if [ ! -f "$TARGET/src/components/lessons-layout.tsx" ]; then
   cp "$SKILL_DIR/engine/lessons-layout.tsx" "$TARGET/src/components/lessons-layout.tsx"

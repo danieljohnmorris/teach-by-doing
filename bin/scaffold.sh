@@ -11,7 +11,8 @@ PKG_NAME=$(basename "$TARGET")
 mkdir -p "$TARGET/src/components" \
          "$TARGET/src/lib" \
          "$TARGET/src/app/lessons" \
-         "$TARGET/src/app/api/chat"
+         "$TARGET/src/app/api/chat" \
+         "$TARGET/src/app/api/results"
 
 cp "$SKILL_DIR"/engine/*.tsx "$TARGET/src/components/"
 # layout.tsx gets its display name injected
@@ -27,9 +28,11 @@ sed "s|{{PKG_NAME}}|$PKG_NAME|g" "$SKILL_DIR/templates/package.json" \
 
 cp "$SKILL_DIR/templates/tsconfig.json" "$TARGET/tsconfig.json"
 cp "$SKILL_DIR/engine/globals.css" "$TARGET/src/app/globals.css"
+cp "$SKILL_DIR/templates/.gitignore" "$TARGET/.gitignore"
 cp "$SKILL_DIR/app-templates/next.config.ts" "$TARGET/next.config.ts"
 cp "$SKILL_DIR/app-templates/mdx-components.tsx" "$TARGET/src/mdx-components.tsx"
 cp "$SKILL_DIR/app-templates/chat-route.ts" "$TARGET/src/app/api/chat/route.ts"
+cp "$SKILL_DIR/app-templates/results-route.ts" "$TARGET/src/app/api/results/route.ts"
 cp "$SKILL_DIR/app-templates/lib-course.ts" "$TARGET/src/lib/course.ts"
 
 cat > "$TARGET/src/app/lessons/layout.tsx" <<'LAYOUT'
