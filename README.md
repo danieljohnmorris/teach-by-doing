@@ -1,84 +1,70 @@
 # teach-by-doing
 
-Teach-with-doing as an agent skill: lessons don't stop at explanation — they verify understanding inside the page.
+An agent skill for teaching topics with graded practice built into the page. Lessons do not stop at explanation. They verify understanding where the learner reads.
 
-Inspired by the `teach` skill (Matt Pocock), which defines the teaching workspace contract (MISSION / GLOSSARY / learning-records, ZPD-driven lessons, reuse-first components). **teach-by-doing** extends that contract with a self-contained, reproducible course engine: a packaged set of React components + shell scripts that scaffold a full Next.js course app from a lesson you describe.
+Inspired by [Matt Pocock's teach skill](https://www.aihero.dev/learn-anything-with-my-teach-skill) for Claude Code. That skill defines the teaching workspace contract: MISSION, GLOSSARY, learning-records, ZPD-driven lessons, reuse-first components. teach-by-doing extends it with a self-contained, reproducible course engine: a packaged set of React components plus shell scripts that scaffold a full Next.js course app from any topic.
 
 ## What a course looks like
 
-Each course is a workspace directory with two cleanly-separated layers:
+Each course workspace has two cleanly separated layers:
 
-- **Content** (owned by the course author): `MISSION.md`, `GLOSSARY.md`, `NOTES.md`, `learning-records/`, and `app/src/app/lessons/NNNN-name/page.mdx` — the actual teaching material, written in MDX.
-- **Engine** (owned by this skill): `app/src/components/` — reusable components the lesson author never edits, upgraded via `./engine.sh upgrade` when the skill ships a fix.
+```
+course/
+├── MISSION.md, GLOSSARY.md, NOTES.md, RESOURCES.md     # content (teach contract)
+├── learning-records/                                   # content (durable progress)
+├── lessons/NNNN-slug/page.mdx                          # content (the lessons themselves)
+└── app/                                                # engine (generated, no edits)
+    └── src/components/{ChatPane,Quiz,Exercise,Qa,Flashcards,SplitPane,...}.tsx
+```
 
-The split means: content can be upgraded without forking the engine, and the engine can be improved without breaking content.
+Content is what makes the course yours. Engine is the machinery any course reuses. The upgrade path (`bin/upgrade.sh`) pulls new engine versions into an existing course without touching content.
 
-## Lessons have four "doing" widgets
+## The four doing widgets
 
-Inside `page.mdx`, the engine provides:
+Every lesson can embed four widget types, each mapping to a different retrieval mode:
 
-| Widget | What it does |
+| Widget | Mechanism |
 |---|---|
-| `Quiz` | Multiple-choice with inline feedback |
-| `Exercise` | Syntax-highlighted starter code + revealable reference answer |
-| `Qa` | Free-text answer graded by an LLM (posts to `/api/chat`) |
-| `Flashcards` | Flip-card deck with spaced repetition tracking |
+| **Quiz** | Multiple choice, correctness feedback, optional explanation |
+| **Exercise** | Code or written task with starter, revealable reference answer, optional playground integration |
+| **Graded Q&A** | Free-text answers routed to a tutor backend for grading |
+| **Flashcards** | Flip-and-track cards with knew/it counts |
 
-All four run client-side, record to `localStorage` under `tbd.results.<lesson>`.
+All widgets take flat props (`question=`, `choices=`, `answer=`), not nested `data={}` objects.
 
-## The chat pane talks to the tutor
+## Tutor backends, no API credits
 
-Every lesson gets a chat pane at the bottom, backed by an AI provider with zero API-credit dependence:
+The chat route is provider-agnostic. Set `TUTOR_PROVIDER`:
 
-```bash
-TUTOR_PROVIDER=ollama          # free, local, default — needs a model pulled
-TUTOR_PROVIDER=claude          # uses your Claude Code subscription
-TUTOR_PROVIDER=pi              # uses your local omp/pi agent runtime
-TUTOR_PROVIDER=zai             # uses z.ai coding plan (ZAI_API_KEY)
-```
+- `ollama` (default) — local models via Ollama, free
+- `claude` — the `claude -p` CLI, rides a Claude Code subscription
+- `pi` — local pi runtime
+- `zai` — z.ai coding plan via the claude CLI
 
-The tutor reads the lesson file as context, so it answers in-domain.
+Pick the one you have. No provider touches pay-per-token API credits.
 
-## Scaffolding a new course
-
-From this skill:
+## Quickstart
 
 ```bash
-~/.claude/skills/teach-by-doing/bin/scaffold.sh ~/code/my-course/app "My Course"
-cd ~/code/my-course/app
-npm install
-npm run dev
+# inside a Claude Code session
+/teach-by-doing rust
+# or directly:
+~/.claude/skills/teach-by-doing/bin/scaffold.sh ~/code/my-course/app "My Topic"
+cd ~/code/my-course/app && npm install && npm run dev
 ```
 
-Open `http://localhost:3000/lessons/0001`. The scaffold ships one lesson at `app/src/app/lessons/0001/page.mdx` as a starting point. Teach it in any subject — the engine doesn't care what the topic is.
+Then author lessons in `app/src/app/lessons/NNNN-slug/page.mdx` using the format from `templates/lesson-template.mdx`.
 
-To upgrade the engine later (new components, bug fixes) without re-scaffolding:
-
-```bash
-~/.claude/skills/teach-by-doing/bin/upgrade.sh ~/code/my-course/app
-```
+Later, when the engine improves: `bin/upgrade.sh ~/code/my-course/app` refreshes the machinery without touching your lessons.
 
 ## Layout
 
-Each lesson page is a three-column layout:
-
-- **Left** — Collapsible lesson nav (current lesson highlighted)
-- **Center** — Lesson content (MDX), scrollable, with the chat pinned below it
-- **Right** — Playground iframe (default: Rust Playground, override via `NEXT_PUBLIC_PLAYGROUND_URL`)
-
-Both dividers are draggable; widths persist in `localStorage` under versioned keys (`tbd.split.*.v4`) so stale layouts never leak across versions.
-
-## Files
-
-```
-SKILL.md                    — what this skill does, when to use it, the engine/content contract
-PITFALLS.md                 — known traps documented (MDX props, storage keys, iframe events)
-engine/                     — the React components + stylesheet (verbatim copies of the working course)
-app-templates/              — next.config.ts, chat route, mdx-components.tsx, lib-course.ts
-templates/                  — package.json, tsconfig.json, lesson-template.mdx
-bin/scaffold.sh             — create a course from the engine
-bin/upgrade.sh              — refresh engine files in an existing course
-```
+- **SKILL.md** — the skill contract agents read (invocation, workflow, engine/content boundary)
+- **PITFALLS.md** — known traps from live courses (MDX brace escaping, pointer-events on drag, storage key versioning)
+- **engine/** — the React components, copied verbatim into courses
+- **app-templates/** — Next.js wiring (config, MDX components, chat route, tsconfig)
+- **templates/** — lesson starter and package.json
+- **bin/scaffold.sh, bin/upgrade.sh** — generation and upgrade scripts
 
 ## License
 
