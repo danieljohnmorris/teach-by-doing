@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- teach-by-doing lesson template.
+     Replace {PLACEHOLDERS}. Every rule below is load-bearing; see skill://teach-by-doing/SKILL.md. -->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="lesson" content="{NNNN}">   <!-- lesson number; keys localStorage results -->
+  <title>{NNNN} — {Title}</title>
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main>
+  <h1>{Title}</h1>
+  <p class="lesson-meta">Lesson {NNNN} · {source / commit / context}</p>
+
+  <!-- SEGMENT: one idea, small. 3–4 concepts max. Plain language before jargon. -->
+  <section class="segment">
+    <h2>{Idea}</h2>
+    <p>{Explanation. Use GLOSSARY.md terms.}</p>
+
+    <pre><code>{minimal example}</code></pre>
+
+    <p class="analogy">{Analogy to something the learner already knows (see NOTES.md for known languages/background).}</p>
+  </section>
+
+  <!-- QUIZ — recognition. data.correct = option index (or array of indices). -->
+  <div class="widget" data-kind="quiz" id="q1">
+    <h3>Check</h3>
+    <p>{Question}</p>
+    <button class="quiz-option">{option}</button>
+    <button class="quiz-option">{option}</button>
+    <button class="quiz-option">{option}</button>
+    <script type="application/json">
+      { "correct": 0, "badMsg": "{why the wrong answers are wrong}" }
+    </script>
+  </div>
+
+  <!-- EXERCISE — production. checks are regexes against the textarea. solution enables self-reveal. -->
+  <div class="widget" data-kind="exercise" id="ex1">
+    <h3>Do</h3>
+    <p>{Task described concretely.}</p>
+    <textarea class="answer" placeholder="{starter or hint}"></textarea>
+    <button class="btn check">Check</button>
+    <button class="btn secondary reveal">Reveal solution</button>
+    <script type="application/json">
+      {
+        "checks": [
+          { "pattern": "{regex}", "msg": "{nudge when this check fails}" }
+        ],
+        "solution": "{full solution}",
+        "goodMsg": "All checks pass."
+      }
+    </script>
+  </div>
+
+  <!-- QA — free text, agent-graded. points = what a good answer must mention. -->
+  <div class="widget" data-kind="qa" id="qa1">
+    <h3>Explain it back</h3>
+    <p>{Prompt: e.g. "Explain {concept} to a colleague who knows {known topic}."}</p>
+    <textarea class="answer" placeholder="Write your explanation…"></textarea>
+    <button class="btn save">Save answer</button>
+    <script type="application/json">
+      { "points": ["{idea a good answer must contain}"] }
+    </script>
+  </div>
+
+  <!-- FLASHCARDS — retrieval. Populate from GLOSSARY.md terms that landed this lesson. -->
+  <div class="widget" data-kind="flashcards" id="fc1">
+    <h3>Drill</h3>
+    <div class="flashcard"><span class="front"></span><span class="back"></span></div>
+    <div class="fc-nav">
+      <button class="btn secondary fc-prev">←</button>
+      <span class="pos"></span>
+      <button class="btn secondary fc-next">→</button>
+    </div>
+    <div class="fc-grade">
+      <button class="btn again">Again</button>
+      <button class="btn good">Got it</button>
+    </div>
+    <script type="application/json">
+      { "cards": [
+        { "front": "{term}", "back": "{glossary definition, verbatim-ish}" }
+      ] }
+    </script>
+  </div>
+
+  <p style="margin-top:3rem;color:var(--muted);font-size:0.9rem">
+    Results persist in this browser. Tell your tutor when you're done —
+    graded answers feed this course's learning records.
+  </p>
+</main>
+<script src="../assets/widgets.js"></script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+---
+title: “Lesson 0001 — Replace this title”
+commit: "source-ref: replace with your course's anchor (repo commit, chapter, page number)"
+file: "path/to/source.ext"
+---
+
+# Lesson 0001 — Replace this title
+
+This is the lesson template. Replace this prose with teaching content.
+
+Keep chunks small: 3–4 concepts per lesson. Use **theory → code → quiz → exercise → Q&A → flashcards** per section.
+
+## Teaching section
+
+Explain the concept in plain language, grounded in the source material. Reference the commit/file/page so the learner can trace it.
+
+```rust
+// Code block — wrap code props in double quotes + \n escapes
+// to avoid MDX JSX-brace pitfalls. See SKILL.md PITFALLS.
+fn main() {
+    println!("hello");
+}
+```
+
+## Check understanding
+
+All three widget types take flat props (no nested `data={...}`). Use them in MDX like this:
+
+<Quiz
+  question="Replace with a focused multiple-choice question that checks one concept."
+  choices={[
+    "Option A (distractor — plausible but wrong)",
+    "Option B (correct)",
+    "Option C (distractor — misapplies the concept)",
+    "Option D (distractor — confuses two concepts)",
+  ]}
+  answer={1}
+  explain="One-line explanation of why B is correct and A/C/D fail."
+/>
+
+<Exercise
+  language="rust"
+  task="Write or modify code to demonstrate the concept. Be concrete."
+  starter={"fn example() {\n    // your code here\n}"}
+  answer="fn example() { return 42; } — with a one-line explanation of the key insight"
+/>
+
+<Qa
+  lesson="0001"
+  question="One sentence, in your own words: what did this lesson teach?"
+/>
+
+<Flashcards
+  cards={[
+    { front: "Term or concept on the front", back: "One-line definition or explanation on the back" },
+  ]}
+/>
+
+## Reading
+
+- [Optional: primary source, official docs, etc.]
+
+---
+
+End with a sentence setting up what the *next* lesson covers and why it's the ZPD from here.
